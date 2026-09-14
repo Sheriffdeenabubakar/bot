@@ -49,8 +49,23 @@ def publish_ipc_state(manager: CrossExchangeShadowManager):
 
 async def main():
     logger.info("Starting CrossExchange Daemon process...")
+
+    # Load symbol universe dynamically
     symbols = []
-    logger.info("Loaded canonical symbols into CrossExchange daemon")
+    try:
+        from config import SYMBOLS
+        symbols = list(SYMBOLS)
+    except Exception as e:
+        logger.warning(f"Could not load SYMBOLS from config: {e}")
+
+    if not symbols:
+        # Fallback default symbol list if config import is unavailable
+        symbols = [
+            "BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "BNBUSDT",
+            "ADAUSDT", "AVAXUSDT", "LINKUSDT", "SUIUSDT", "PEPEUSDT", "NEARUSDT"
+        ]
+
+    logger.info(f"Loaded {len(symbols)} native symbols into CrossExchange daemon")
 
     manager = CrossExchangeShadowManager()
     await manager.start(symbols)

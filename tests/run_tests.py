@@ -66,8 +66,13 @@ if __name__ == '__main__':
         spec4 = importlib.util.spec_from_file_location("test_crossexchange", str(CX_PATH))
         mod4 = importlib.util.module_from_spec(spec4)
         spec4.loader.exec_module(mod4)
-        cx_tests = [getattr(mod4, name) for name in dir(mod4) if name.startswith("test_")]
-        tests.extend(cx_tests)
+
+        import unittest
+        loader = unittest.TestLoader()
+        suite = loader.loadTestsFromModule(mod4)
+        for test_case in suite:
+            for test in test_case:
+                tests.append(test)
 
     ok = True
     for t in tests:
