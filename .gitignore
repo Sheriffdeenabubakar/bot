@@ -1,0 +1,17 @@
+*.zip
+*.pyc
+__pycache__/
+*.log
+*.log.*
+*.tar.gz
+v3-bitget-api-sdk/
+quant_research_runtime/
+research/
+telemetry_repair_quarantine/
+*.json
+*.jsonl
+*.csv
+*.txt
+*.bak*
+*.bak_*
+.env
