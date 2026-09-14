@@ -762,21 +762,11 @@ def main_loop():
                     scanner_completed = bool(scanner_once or not periodic_rescan_enabled)
 
                     # Start (or extend) the cross-exchange shadow layer with the
-                    # same symbol universe the proven Bitget path just warmed up.
-                    # No-op unless enable_cross_exchange_shadow is turned on.
+                    # exact scanner-returned eligible_symbols universe.
                     if _CROSS_EXCHANGE_AVAILABLE and _CX_CONFIG.get("enable_cross_exchange_shadow", False):
                         try:
                             cx_status = start_cross_exchange_shadow_background(eligible_symbols)
-                            if cx_status.get("enabled"):
-                                logger.info(f"Cross-exchange layer active: {cx_status}")
-                                if _CX_CONFIG.get("cx_live_signal_mode", True):
-                                    logger.info(
-                                        "Cross-exchange LIVE basis ENABLED: orderflow warm/coverage/confirmation "
-                                        "and entry-gate metrics (pressure/imbalance/CVD/aggression) now use the "
-                                        "consolidated Bitget+Binance+OKX+Bybit book. USD thresholds scale with "
-                                        "contributing-venue count; set CX_LIVE_SIGNAL_MODE=false to revert to "
-                                        "shadow-only."
-                                    )
+                            logger.info(f"Cross-exchange layer started for {len(eligible_symbols)} scanner symbols: {cx_status}")
                         except Exception:
                             logger.exception("Cross-exchange shadow layer failed to start (non-fatal)")
                 last_scan_time = current_time
