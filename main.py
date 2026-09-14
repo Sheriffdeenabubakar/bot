@@ -727,11 +727,14 @@ def main_loop():
             if should_scan:
                 logger.info(f"\n--- Initiating coin scan at {current_time_str} ---")
                 scanned_coins = scan_coins()
-                eligible_symbols = list(dict.fromkeys(coin['symbol'] for coin in scanned_coins))
-                if not eligible_symbols:
-                    logger.warning("No eligible coins found by the scanner. Will retry before analysis starts.")
-                else:
+                new_symbols = list(dict.fromkeys(coin['symbol'] for coin in scanned_coins))
+                if new_symbols:
+                    eligible_symbols = new_symbols
                     logger.info(f"Scanner found {len(eligible_symbols)} eligible symbols: {', '.join(eligible_symbols)}")
+                elif not eligible_symbols:
+                    logger.warning("No eligible coins found by the scanner. Will retry before analysis starts.")
+
+                if eligible_symbols:
                     wait_for_warmup = not orderflow_startup_prepared
                     of_warmup_summary = _run_async(
                         prepare_orderflow_for_symbols(
@@ -748,15 +751,6 @@ def main_loop():
                             f"active_groups={of_warmup_summary.get('active_groups', 0)} | "
                             f"elapsed={of_warmup_summary.get('warmup_elapsed_seconds', 0)}s | "
                             f"target_age={of_warmup_summary.get('target_age_seconds', 0)}s"
-                        )
-                        if of_warmup_summary.get("sample_not_ready"):
-                            logger.warning(
-                                "Orderflow not-ready sample: "
-                                + ", ".join(str(s) for s in of_warmup_summary.get("sample_not_ready", [])[:10])
-                            )
-                    else:
-                        logger.info(
-                            f"Orderflow warm-up skipped: {(of_warmup_summary or {}).get('reason', 'disabled')}"
                         )
                     orderflow_startup_prepared = True
                     scanner_completed = bool(scanner_once or not periodic_rescan_enabled)
