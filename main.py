@@ -693,6 +693,17 @@ def main_loop():
     scanner_completed = False
     orderflow_startup_prepared = False
 
+    # Start cross-exchange engine immediately on startup if available
+    if _CROSS_EXCHANGE_AVAILABLE and _CX_CONFIG.get("enable_cross_exchange_shadow", False):
+        try:
+            from config import SYMBOLS as _INIT_SYMBOLS
+            _init_symbols = list(_INIT_SYMBOLS) if _INIT_SYMBOLS else []
+            if _init_symbols:
+                cx_status = start_cross_exchange_shadow_background(_init_symbols)
+                logger.info(f"Cross-exchange shadow layer initialized at startup: {cx_status}")
+        except Exception as _cx_init_err:
+            logger.warning(f"Failed to auto-start cross-exchange shadow layer at startup: {_cx_init_err}")
+
     logger.info("Starting SMC Signal Analyzer with dynamic coin scanning.")
     logger.info(f"Signal checks every {signal_check_interval} seconds per symbol (if not scanned).")
     logger.info(
